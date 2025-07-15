@@ -3,7 +3,7 @@ class DisasterCirclesApp {
         this.canvas = null;
         this.ctx = null;
         this.image = null;
-        this.scale = 1; // пикселей на метр
+        this.scale = 1; // pixels per meter
         this.circles = [];
         this.scalePoints = [];
         this.isDragging = false;
@@ -20,7 +20,7 @@ class DisasterCirclesApp {
     }
 
     setupEventListeners() {
-        // Загрузка файла
+        // File upload
         const imageInput = document.getElementById('imageInput');
         const uploadArea = document.getElementById('uploadArea');
 
@@ -29,10 +29,10 @@ class DisasterCirclesApp {
         uploadArea.addEventListener('dragover', (e) => this.handleDragOver(e));
         uploadArea.addEventListener('drop', (e) => this.handleDrop(e));
 
-        // Настройка масштаба
+        // Scale confirmation
         document.getElementById('confirmScale').addEventListener('click', () => this.confirmScale());
 
-        // Управление кругами
+        // Circle controls
         document.getElementById('addCircle').addEventListener('click', () => this.addCircle());
         document.getElementById('exportImage').addEventListener('click', () => this.exportImage());
     }
@@ -85,33 +85,37 @@ class DisasterCirclesApp {
     setupImageCanvas() {
         this.canvas.width = this.image.width;
         this.canvas.height = this.image.height;
+
         this.redrawCanvas();
         document.getElementById('canvasContainer').style.display = 'block';
     }
 
     showScaleSection() {
         document.getElementById('scaleSection').style.display = 'block';
-        document.getElementById('scaleInfo').textContent = 'Кликните на два конца масштабной линейки';
+        document.getElementById('scaleInfo').textContent = 'Клацніть на два кінці масштабної лінійки';
         this.scalePoints = [];
     }
 
     handleCanvasClick(event) {
         if (document.getElementById('scaleSection').style.display !== 'none' && this.scalePoints.length < 2) {
             const rect = this.canvas.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
+            const scaleX = this.canvas.width / rect.width;
+            const scaleY = this.canvas.height / rect.height;
+            const x = (event.clientX - rect.left) * scaleX;
+            const y = (event.clientY - rect.top) * scaleY;
+
 
             this.scalePoints.push({ x, y });
 
             if (this.scalePoints.length === 1) {
-                document.getElementById('scaleInfo').textContent = 'Кликните на второй конец масштабной линейки';
+                document.getElementById('scaleInfo').textContent = 'Клацніть на другий кінець масштабної лінійки';
             } else if (this.scalePoints.length === 2) {
                 const distance = Math.sqrt(
                     Math.pow(this.scalePoints[1].x - this.scalePoints[0].x, 2) +
                     Math.pow(this.scalePoints[1].y - this.scalePoints[0].y, 2)
                 );
                 document.getElementById('scaleInfo').textContent =
-                    `Длина отрезка: ${distance.toFixed(1)} пикселей. Введите реальную длину и нажмите "Подтвердить масштаб"`;
+                    `Довжина відрізка: ${distance.toFixed(1)} пікселів. Введіть реальну довжину та натисніть "Підтвердити масштаб"`;
             }
 
             this.redrawCanvas();
@@ -120,7 +124,7 @@ class DisasterCirclesApp {
 
     confirmScale() {
         if (this.scalePoints.length !== 2) {
-            alert('Пожалуйста, выберите два конца масштабной линейки');
+            alert('Будь ласка, виберіть два кінці масштабної лінійки');
             return;
         }
 
@@ -128,7 +132,7 @@ class DisasterCirclesApp {
         const scaleUnit = document.getElementById('scaleUnit').value;
 
         if (!scaleValue || scaleValue <= 0) {
-            alert('Пожалуйста, введите корректное значение масштаба');
+            alert('Будь ласка, введіть коректне значення масштабу');
             return;
         }
 
@@ -153,11 +157,11 @@ class DisasterCirclesApp {
             id: this.circleCounter,
             x: this.canvas.width / 2,
             y: this.canvas.height / 2,
-            radius: 500, // в метрах
+            radius: 0,
             color: '#ff0000',
             lineType: 'solid',
             fillColor: '#ff0000',
-            fillOpacity: 0.1,
+            fillOpacity: 0,
             lineWidth: 2
         };
 
@@ -183,9 +187,9 @@ class DisasterCirclesApp {
             </td>
             <td>
                 <select onchange="app.updateCircleLineType(${circle.id}, this.value)">
-                    <option value="solid">Сплошная</option>
+                    <option value="solid">Суцільна</option>
                     <option value="dashed">Пунктир</option>
-                    <option value="dotted">Точки</option>
+                    <option value="dotted">Точкова</option>
                 </select>
             </td>
             <td>
@@ -198,7 +202,7 @@ class DisasterCirclesApp {
                 <span>${Math.round(circle.fillOpacity * 100)}%</span>
             </td>
             <td>
-                <button class="delete-circle" onclick="app.deleteCircle(${circle.id})">Удалить</button>
+                <button class="delete-circle" onclick="app.deleteCircle(${circle.id})">Видалити</button>
             </td>
         `;
 
@@ -241,7 +245,7 @@ class DisasterCirclesApp {
         const circle = this.circles.find(c => c.id === id);
         if (circle) {
             circle.fillOpacity = parseFloat(opacity);
-            // Обновляем отображение процентов
+            // Update displayed percentage
             const span = document.querySelector(`#circle-row-${id} input[type="range"] + span`);
             if (span) {
                 span.textContent = `${Math.round(opacity * 100)}%`;
@@ -258,8 +262,11 @@ class DisasterCirclesApp {
 
     handleMouseDown(event) {
         const rect = this.canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        const x = (event.clientX - rect.left) * scaleX;
+        const y = (event.clientY - rect.top) * scaleY;
+
 
         for (let i = this.circles.length - 1; i >= 0; i--) {
             const circle = this.circles[i];
@@ -278,8 +285,11 @@ class DisasterCirclesApp {
 
     handleMouseMove(event) {
         const rect = this.canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+        const x = (event.clientX - rect.left) * scaleX;
+        const y = (event.clientY - rect.top) * scaleY;
+
 
         if (this.isDragging && this.dragCircleIndex >= 0) {
             const circle = this.circles[this.dragCircleIndex];
@@ -287,7 +297,7 @@ class DisasterCirclesApp {
             circle.y = y - this.dragOffset.y;
             this.redrawCanvas();
         } else {
-            // Проверяем, наведена ли мышь на круг
+            // Check if the cursor is over any circle
             let overCircle = false;
             for (let circle of this.circles) {
                 const pixelRadius = circle.radius * this.scale;
@@ -310,12 +320,12 @@ class DisasterCirclesApp {
     redrawCanvas() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Рисуем изображение
+        // Draw image
         if (this.image) {
             this.ctx.drawImage(this.image, 0, 0);
         }
 
-        // Рисуем точки масштаба
+        // Draw scale points
         if (this.scalePoints.length > 0) {
             this.ctx.fillStyle = '#ff0000';
             this.ctx.strokeStyle = '#ff0000';
@@ -335,7 +345,7 @@ class DisasterCirclesApp {
             }
         }
 
-        // Рисуем круги
+        // Draw circles
         for (let circle of this.circles) {
             this.drawCircle(circle);
         }
@@ -344,7 +354,7 @@ class DisasterCirclesApp {
     drawCircle(circle) {
         const pixelRadius = circle.radius * this.scale;
 
-        // Заливка
+        // Fill
         if (circle.fillOpacity > 0) {
             this.ctx.globalAlpha = circle.fillOpacity;
             this.ctx.fillStyle = circle.fillColor;
@@ -354,11 +364,11 @@ class DisasterCirclesApp {
             this.ctx.globalAlpha = 1;
         }
 
-        // Обводка
+        // Stroke
         this.ctx.strokeStyle = circle.color;
         this.ctx.lineWidth = circle.lineWidth;
 
-        // Настройка типа линии
+        // Set line type
         switch (circle.lineType) {
             case 'dashed':
                 this.ctx.setLineDash([10, 10]);
@@ -374,10 +384,10 @@ class DisasterCirclesApp {
         this.ctx.arc(circle.x, circle.y, pixelRadius, 0, 2 * Math.PI);
         this.ctx.stroke();
 
-        // Сбрасываем настройки линии
+        // Reset line dash
         this.ctx.setLineDash([]);
 
-        // Центральная точка
+        // Center point
         this.ctx.fillStyle = circle.color;
         this.ctx.beginPath();
         this.ctx.arc(circle.x, circle.y, 3, 0, 2 * Math.PI);
@@ -392,5 +402,5 @@ class DisasterCirclesApp {
     }
 }
 
-// Создаем экземпляр приложения
+// Create app instance
 const app = new DisasterCirclesApp();

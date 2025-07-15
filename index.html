@@ -1,51 +1,51 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Круги поражения на картах</title>
+    <title>Кола ураження на картах</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 <div class="container">
     <header>
-        <h1>Моделирование кругов поражения</h1>
+        <h1>Моделювання кіл ураження</h1>
     </header>
 
     <main>
-        <!-- Загрузка изображения -->
+        <!-- Image upload section -->
         <section class="upload-section">
-            <h2>1. Загрузка карты</h2>
+            <h2>1. Завантаження карти</h2>
             <input type="file" id="imageInput" accept="image/*" />
             <div class="upload-area" id="uploadArea">
-                <p>Перетащите изображение сюда или нажмите для выбора</p>
+                <p>Перетягніть зображення сюди або натисніть для вибору</p>
             </div>
         </section>
 
-        <!-- Настройка масштаба -->
+        <!-- Scale configuration section -->
         <section class="scale-section" id="scaleSection" style="display: none;">
-            <h2>2. Настройка масштаба</h2>
-            <p>Кликните на начало и конец масштабной линейки на карте</p>
+            <h2>2. Налаштування масштабу</h2>
+            <p>Клікніть на початок і кінець масштабної лінійки на карті</p>
             <div class="scale-controls">
-                <label for="scaleValue">Длина отрезка:</label>
+                <label for="scaleValue">Довжина відрізка:</label>
                 <input type="number" id="scaleValue" placeholder="500" min="1">
                 <select id="scaleUnit">
-                    <option value="m">метров</option>
-                    <option value="km">километров</option>
+                    <option value="m">метрів</option>
+                    <option value="km">кілометрів</option>
                 </select>
-                <button id="confirmScale">Подтвердить масштаб</button>
+                <button id="confirmScale">Підтвердити масштаб</button>
             </div>
             <div class="scale-info">
-                <p id="scaleInfo">Кликните на два конца масштабной линейки</p>
+                <p id="scaleInfo">Клікніть на два кінці масштабної лінійки</p>
             </div>
         </section>
 
-        <!-- Управление кругами -->
+        <!-- Circle management section -->
         <section class="circles-section" id="circlesSection" style="display: none;">
-            <h2>3. Настройка кругов поражения</h2>
+            <h2>3. Налаштування кіл ураження</h2>
             <div class="circles-controls">
-                <button id="addCircle">Добавить круг</button>
-                <button id="exportImage">Экспортировать результат</button>
+                <button id="addCircle">Додати коло</button>
+                <button id="exportImage">Експортувати результат</button>
             </div>
 
             <div class="circles-table">
@@ -53,12 +53,12 @@
                     <thead>
                     <tr>
                         <th>№</th>
-                        <th>Радиус (м)</th>
-                        <th>Цвет</th>
-                        <th>Тип линии</th>
+                        <th>Радіус (м)</th>
+                        <th>Колір</th>
+                        <th>Тип лінії</th>
                         <th>Заливка</th>
-                        <th>Прозрачность</th>
-                        <th>Действия</th>
+                        <th>Прозорість</th>
+                        <th>Дії</th>
                     </tr>
                     </thead>
                     <tbody id="circlesTableBody">
@@ -67,12 +67,12 @@
             </div>
         </section>
 
-        <!-- Рабочая область -->
+        <!-- Canvas workspace section -->
         <section class="workspace">
             <div class="canvas-container" id="canvasContainer" style="display: none;">
                 <canvas id="mainCanvas"></canvas>
                 <div class="canvas-info">
-                    <p>Перетаскивайте круги мышкой для позиционирования</p>
+                    <p>Перетягуйте кола для позиціонування</p>
                 </div>
             </div>
         </section>
