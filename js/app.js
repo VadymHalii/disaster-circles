@@ -104,7 +104,6 @@ class DisasterCirclesApp {
             const x = (event.clientX - rect.left) * scaleX;
             const y = (event.clientY - rect.top) * scaleY;
 
-
             this.scalePoints.push({ x, y });
 
             if (this.scalePoints.length === 1) {
@@ -162,7 +161,9 @@ class DisasterCirclesApp {
             lineType: 'solid',
             fillColor: '#ff0000',
             fillOpacity: 0,
-            lineWidth: 2
+            lineWidth: 2,
+            showCenter: false,
+            draggable: true
         };
 
         this.circles.push(circle);
@@ -200,6 +201,14 @@ class DisasterCirclesApp {
                 <input type="range" min="0" max="1" step="0.1" value="${circle.fillOpacity}"
                        onchange="app.updateCircleFillOpacity(${circle.id}, this.value)">
                 <span>${Math.round(circle.fillOpacity * 100)}%</span>
+            </td>
+            <td>
+                <input type="checkbox" ${circle.showCenter ? 'checked' : ''} 
+                       onchange="app.updateCircleShowCenter(${circle.id}, this.checked)">
+            </td>
+            <td>
+                <input type="checkbox" ${circle.draggable ? 'checked' : ''} 
+                       onchange="app.updateCircleDraggable(${circle.id}, this.checked)">
             </td>
             <td>
                 <button class="delete-circle" onclick="app.deleteCircle(${circle.id})">Видалити</button>
@@ -254,6 +263,22 @@ class DisasterCirclesApp {
         }
     }
 
+    updateCircleShowCenter(id, showCenter) {
+        const circle = this.circles.find(c => c.id === id);
+        if (circle) {
+            circle.showCenter = showCenter;
+            this.redrawCanvas();
+        }
+    }
+
+    updateCircleDraggable(id, draggable) {
+        const circle = this.circles.find(c => c.id === id);
+        if (circle) {
+            circle.draggable = draggable;
+            this.redrawCanvas();
+        }
+    }
+
     deleteCircle(id) {
         this.circles = this.circles.filter(c => c.id !== id);
         document.getElementById(`circle-row-${id}`).remove();
@@ -267,9 +292,12 @@ class DisasterCirclesApp {
         const x = (event.clientX - rect.left) * scaleX;
         const y = (event.clientY - rect.top) * scaleY;
 
-
         for (let i = this.circles.length - 1; i >= 0; i--) {
             const circle = this.circles[i];
+
+            // Check if circle is draggable
+            if (!circle.draggable) continue;
+
             const pixelRadius = circle.radius * this.scale;
             const distance = Math.sqrt(Math.pow(x - circle.x, 2) + Math.pow(y - circle.y, 2));
 
@@ -290,24 +318,25 @@ class DisasterCirclesApp {
         const x = (event.clientX - rect.left) * scaleX;
         const y = (event.clientY - rect.top) * scaleY;
 
-
         if (this.isDragging && this.dragCircleIndex >= 0) {
             const circle = this.circles[this.dragCircleIndex];
             circle.x = x - this.dragOffset.x;
             circle.y = y - this.dragOffset.y;
             this.redrawCanvas();
         } else {
-            // Check if the cursor is over any circle
-            let overCircle = false;
+            // Check if the cursor is over any draggable circle
+            let overDraggableCircle = false;
             for (let circle of this.circles) {
+                if (!circle.draggable) continue;
+
                 const pixelRadius = circle.radius * this.scale;
                 const distance = Math.sqrt(Math.pow(x - circle.x, 2) + Math.pow(y - circle.y, 2));
                 if (distance <= pixelRadius) {
-                    overCircle = true;
+                    overDraggableCircle = true;
                     break;
                 }
             }
-            this.canvas.style.cursor = overCircle ? 'grab' : 'crosshair';
+            this.canvas.style.cursor = overDraggableCircle ? 'grab' : 'crosshair';
         }
     }
 
@@ -387,16 +416,22 @@ class DisasterCirclesApp {
         // Reset line dash
         this.ctx.setLineDash([]);
 
-        // Center point
-        this.ctx.fillStyle = circle.color;
-        this.ctx.beginPath();
-        this.ctx.arc(circle.x, circle.y, 3, 0, 2 * Math.PI);
-        this.ctx.fill();
+        // Center point (only if showCenter is true)
+        if (circle.showCenter) {
+            this.ctx.fillStyle = circle.color;
+            this.ctx.beginPath();
+            this.ctx.arc(circle.x, circle.y, 3, 0, 2 * Math.PI);
+            this.ctx.fill();
+        }
     }
 
     exportImage() {
         const link = document.createElement('a');
-        link.download = `disaster-circles-${new Date().toISOString().slice(0, 10)}.png`;
+        const now = new Date();
+        const formatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}_` +
+            `${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}-${String(now.getSeconds()).padStart(2, '0')}`;
+
+        link.download = `disaster-circles-${formatted}.png`;
         link.href = this.canvas.toDataURL();
         link.click();
     }
