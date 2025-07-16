@@ -123,6 +123,13 @@ h2 {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+
+    #circlesTable th,
+    #circlesTable td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
 }
 
 .circles-controls {
@@ -296,3 +303,12 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
     -moz-appearance: textfield;
 }
+
+.legend-symbol {
+    display: block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+    margin: 0 auto;
+}
+

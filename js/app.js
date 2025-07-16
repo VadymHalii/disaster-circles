@@ -179,6 +179,9 @@ class DisasterCirclesApp {
         row.innerHTML = `
             <td>${circle.id}</td>
             <td>
+                <canvas class="legend-symbol" id="legend-${circle.id}" width="40" height="40"></canvas>
+            </td>
+            <td>
                 <input type="number" value="${circle.radius}" min="1" 
                        onchange="app.updateCircleRadius(${circle.id}, this.value)">
             </td>
@@ -216,7 +219,51 @@ class DisasterCirclesApp {
         `;
 
         tbody.appendChild(row);
+        this.drawLegendSymbol(circle);
     }
+
+    drawLegendSymbol(circle) {
+        const canvas = document.getElementById(`legend-${circle.id}`);
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = 12;
+
+        // Fill
+        if (circle.fillOpacity > 0) {
+            ctx.globalAlpha = circle.fillOpacity;
+            ctx.fillStyle = circle.fillColor;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        }
+
+        // Stroke
+        ctx.strokeStyle = circle.color;
+        ctx.lineWidth = 2;
+
+        switch (circle.lineType) {
+            case 'dashed':
+                ctx.setLineDash([6, 4]);
+                break;
+            case 'dotted':
+                ctx.setLineDash([2, 4]);
+                break;
+            default:
+                ctx.setLineDash([]);
+        }
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
 
     updateCircleRadius(id, radius) {
         const circle = this.circles.find(c => c.id === id);
@@ -231,6 +278,7 @@ class DisasterCirclesApp {
         if (circle) {
             circle.color = color;
             this.redrawCanvas();
+            this.drawLegendSymbol(circle);
         }
     }
 
@@ -239,6 +287,7 @@ class DisasterCirclesApp {
         if (circle) {
             circle.lineType = lineType;
             this.redrawCanvas();
+            this.drawLegendSymbol(circle);
         }
     }
 
@@ -247,6 +296,7 @@ class DisasterCirclesApp {
         if (circle) {
             circle.fillColor = fillColor;
             this.redrawCanvas();
+            this.drawLegendSymbol(circle);
         }
     }
 
@@ -260,6 +310,7 @@ class DisasterCirclesApp {
                 span.textContent = `${Math.round(opacity * 100)}%`;
             }
             this.redrawCanvas();
+            this.drawLegendSymbol(circle);
         }
     }
 
