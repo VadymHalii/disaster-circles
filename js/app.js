@@ -7,8 +7,8 @@ class DisasterCirclesApp {
         this.circles = [];
         this.scalePoints = [];
         this.isDragging = false;
-        this.dragCircleIndex = -1;
-        this.dragOffset = { x: 0, y: 0 };
+        this.dragStartPoint = { x: 0, y: 0 };
+        this.dragOffsets = []; // Store offsets for all draggable circles
         this.circleCounter = 0;
 
         this.init();
@@ -292,22 +292,38 @@ class DisasterCirclesApp {
         const x = (event.clientX - rect.left) * scaleX;
         const y = (event.clientY - rect.top) * scaleY;
 
+        // Check if clicking on any draggable circle
+        let clickedOnDraggable = false;
         for (let i = this.circles.length - 1; i >= 0; i--) {
             const circle = this.circles[i];
-
-            // Check if circle is draggable
             if (!circle.draggable) continue;
 
             const pixelRadius = circle.radius * this.scale;
             const distance = Math.sqrt(Math.pow(x - circle.x, 2) + Math.pow(y - circle.y, 2));
 
             if (distance <= pixelRadius) {
-                this.isDragging = true;
-                this.dragCircleIndex = i;
-                this.dragOffset = { x: x - circle.x, y: y - circle.y };
-                this.canvas.style.cursor = 'grabbing';
+                clickedOnDraggable = true;
                 break;
             }
+        }
+
+        if (clickedOnDraggable) {
+            this.isDragging = true;
+            this.dragStartPoint = { x, y };
+            this.dragOffsets = [];
+
+            // Calculate offsets for all draggable circles
+            for (let circle of this.circles) {
+                if (circle.draggable) {
+                    this.dragOffsets.push({
+                        id: circle.id,
+                        offsetX: x - circle.x,
+                        offsetY: y - circle.y
+                    });
+                }
+            }
+
+            this.canvas.style.cursor = 'grabbing';
         }
     }
 
@@ -318,10 +334,15 @@ class DisasterCirclesApp {
         const x = (event.clientX - rect.left) * scaleX;
         const y = (event.clientY - rect.top) * scaleY;
 
-        if (this.isDragging && this.dragCircleIndex >= 0) {
-            const circle = this.circles[this.dragCircleIndex];
-            circle.x = x - this.dragOffset.x;
-            circle.y = y - this.dragOffset.y;
+        if (this.isDragging) {
+            // Move all draggable circles together
+            for (let offset of this.dragOffsets) {
+                const circle = this.circles.find(c => c.id === offset.id);
+                if (circle) {
+                    circle.x = x - offset.offsetX;
+                    circle.y = y - offset.offsetY;
+                }
+            }
             this.redrawCanvas();
         } else {
             // Check if the cursor is over any draggable circle
@@ -342,7 +363,7 @@ class DisasterCirclesApp {
 
     handleMouseUp() {
         this.isDragging = false;
-        this.dragCircleIndex = -1;
+        this.dragOffsets = [];
         this.canvas.style.cursor = 'crosshair';
     }
 
