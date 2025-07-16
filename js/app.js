@@ -156,7 +156,7 @@ class DisasterCirclesApp {
             id: this.circleCounter,
             x: this.canvas.width / 2,
             y: this.canvas.height / 2,
-            radius: 0,
+            radius: null,
             color: '#ff0000',
             lineType: 'solid',
             fillColor: '#ff0000',
